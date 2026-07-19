@@ -1,0 +1,60 @@
+{
+  "target_industries": [
+    "Business Services",
+    "Professional Services",
+    "Training & Education",
+    "Construction & Building Services",
+    "Building Materials & Supply",
+    "Real Estate Services",
+    "Specialty Trades",
+    "Consumer",
+    "Food & Beverage",
+    "Hospitality & Leisure",
+    "Healthcare",
+    "Behavioral Health",
+    "Wellness & Supplements",
+    "Industrials",
+    "Industrial Services",
+    "Textiles",
+    "Media & Communications",
+    "Media & Content",
+    "Print, Signage & Display",
+    "Technology & Digital",
+    "E-Commerce & Digital",
+    "Transportation & Logistics",
+    "Passenger Transport"
+  ],
+  "locations": {
+    "states": ["New York", "NY"],
+    "remote_terms": ["remote", "online", "fully online", "relocatable"]
+  },
+  "asking_price": {
+    "min": 1000000,
+    "max": 6000000
+  },
+  "annual_revenue": {
+    "min": null,
+    "max": null
+  },
+  "cash_flow": {
+    "label": "SDE",
+    "min": 500000,
+    "max": 2000000
+  },
+  "financing_preferences": {
+    "seller_financing_is_positive": true
+  },
+  "must_have_traits": [],
+  "deal_breakers": [],
+  "promising_score_threshold": 75,
+  "selected_marketplace": {
+    "name": "BizQuest",
+    "url": "https://www.bizquest.com/businesses-for-sale/?q=bHQ9MzAsNDAsODA%3D",
+    "mode": "sample_data_for_v1"
+  },
+  "notion": {
+    "database_url": "https://app.notion.com/p/e0f23824e98d4e459c3466c05e767239",
+    "data_source_id": "collection://f8b80373-c414-47d2-a1ed-6f482b9f22c3"
+  }
+}
+

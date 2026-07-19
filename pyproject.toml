@@ -1,0 +1,11 @@
+[project]
+name = "deal-finder-ai"
+version = "0.1.0"
+description = "Small Notion-first foundation for finding and scoring business acquisition listings."
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
