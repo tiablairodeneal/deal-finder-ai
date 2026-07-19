@@ -18,6 +18,15 @@ class DuplicateTests(unittest.TestCase):
         listing = Listing(title="Deal", source="BizQuest", listing_url="https://www.bizquest.com/sample/deal?utm_source=x")
         self.assertEqual(duplicate_key(listing), "https://bizquest.com/sample/deal")
 
+    def test_duplicate_key_prefers_sample_id_when_present(self):
+        listing = Listing(
+            title="Sample Deal",
+            source="BizQuest",
+            listing_url="https://www.bizquest.com/businesses-for-sale/",
+            raw={"sample_id": "sample-deal"},
+        )
+        self.assertEqual(duplicate_key(listing), "bizquest:sample-deal")
+
 
 class ScoringTests(unittest.TestCase):
     def test_strong_new_york_seller_financed_listing_scores_promising(self):

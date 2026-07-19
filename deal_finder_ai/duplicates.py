@@ -28,6 +28,10 @@ def normalize_url(url: str | None) -> str | None:
 
 
 def duplicate_key(listing: Listing) -> str:
+    sample_id = listing.raw.get("sample_id")
+    if sample_id:
+        return f"{listing.source.lower().strip()}:{str(sample_id).lower().strip()}"
+
     normalized = normalize_url(listing.listing_url)
     if normalized:
         return normalized
@@ -45,4 +49,3 @@ def duplicate_key(listing: Listing) -> str:
 
 def is_duplicate(listing: Listing, seen_keys: set[str]) -> bool:
     return duplicate_key(listing) in seen_keys
-
