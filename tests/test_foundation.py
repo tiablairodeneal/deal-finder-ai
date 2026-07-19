@@ -3,7 +3,8 @@ import unittest
 from deal_finder_ai.collectors.marketplaces import active_marketplace_names, collect_priority_marketplace_samples
 from deal_finder_ai.criteria import load_criteria
 from deal_finder_ai.duplicates import duplicate_key, normalize_url
-from deal_finder_ai.models import Listing
+from deal_finder_ai.models import EnrichedListing, Listing, ScoreResult
+from deal_finder_ai.notion_sync import _page_properties
 from deal_finder_ai.pipeline import enrich_listings, qualified_listings
 from deal_finder_ai.scoring import score_listing
 
@@ -74,8 +75,48 @@ class PipelineTests(unittest.TestCase):
         criteria = load_criteria()
         enriched = enrich_listings(collect_priority_marketplace_samples(), criteria)
         qualified = qualified_listings(enriched, criteria)
-        self.assertEqual(len(qualified), 10)
+        self.assertEqual(len(qualified), 5)
         self.assertTrue(all(item.score.score >= 75 for item in qualified))
+        self.assertTrue(all(item.listing.listing_url for item in qualified))
+
+    def test_sample_listings_do_not_use_generic_source_pages_as_listing_urls(self):
+        generic_urls = {
+            "https://www.appbusinessbrokers.com/buy/",
+            "https://businessesforsaleinnewyorkcity.com/",
+            "https://businessesforsaleinnewyorkcity.com/businesses-for-sale",
+            "https://www.websiteclosers.com/businesses-for-sale/",
+            "https://www.bizquest.com/restaurants-for-sale/",
+        }
+        listings = collect_priority_marketplace_samples()
+        urls = {listing.listing_url for listing in listings if listing.listing_url}
+        self.assertTrue(generic_urls.isdisjoint(urls))
+
+
+class NotionSyncTests(unittest.TestCase):
+    def test_update_payload_clears_unavailable_listing_url_and_financials(self):
+        item = EnrichedListing(
+            listing=Listing(
+                title="No Detail URL",
+                source="AppBusinessBrokers",
+                listing_url=None,
+                location="Unavailable",
+                financing="Unavailable",
+            ),
+            duplicate_key="appbusinessbrokers:no-detail",
+            score=ScoreResult(
+                score=25,
+                explanation="No public detail URL.",
+                matched_criteria=[],
+                missed_criteria=[],
+                status="Needs Review",
+            ),
+            executive_summary="Placeholder only.",
+        )
+        properties = _page_properties(item, include_date_found=False)
+        self.assertEqual(properties["Listing URL"], {"url": None})
+        self.assertEqual(properties["Asking Price"], {"number": None})
+        self.assertEqual(properties["Annual Revenue"], {"number": None})
+        self.assertEqual(properties["Cash Flow / SDE / EBITDA"], {"number": None})
 
 
 if __name__ == "__main__":
