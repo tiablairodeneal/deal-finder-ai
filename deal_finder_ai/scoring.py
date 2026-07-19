@@ -4,6 +4,17 @@ from deal_finder_ai.models import Listing, ScoreResult
 
 
 def score_listing(listing: Listing, criteria: dict) -> ScoreResult:
+    deal_breaker = matched_deal_breaker(listing, criteria)
+    if deal_breaker:
+        explanation = f"0/100 total; excluded: matched deal breaker term '{deal_breaker}'"
+        return ScoreResult(
+            score=0,
+            explanation=explanation,
+            matched_criteria=[],
+            missed_criteria=[f"deal breaker: {deal_breaker}"],
+            status="Excluded",
+        )
+
     score = 0
     matched: list[str] = []
     missed: list[str] = []
@@ -57,6 +68,25 @@ def score_listing(listing: Listing, criteria: dict) -> ScoreResult:
         ]
     )
     return ScoreResult(score=min(score, 100), explanation=explanation, matched_criteria=matched, missed_criteria=missed, status=status)
+
+
+def matched_deal_breaker(listing: Listing, criteria: dict) -> str | None:
+    haystack = " ".join(
+        str(value)
+        for value in [
+            listing.title,
+            listing.industry,
+            listing.location,
+            listing.financing,
+            listing.description,
+            listing.listing_url,
+        ]
+        if value
+    ).lower()
+    for term in criteria.get("deal_breakers", []):
+        if str(term).lower() in haystack:
+            return str(term)
+    return None
 
 
 def _industry_score(listing: Listing, criteria: dict) -> int:

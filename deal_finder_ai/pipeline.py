@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from deal_finder_ai.duplicates import duplicate_key
 from deal_finder_ai.models import EnrichedListing, Listing
-from deal_finder_ai.scoring import score_listing
+from deal_finder_ai.scoring import matched_deal_breaker, score_listing
 from deal_finder_ai.summaries import executive_summary
 
 
@@ -11,6 +11,9 @@ def enrich_listings(listings: list[Listing], criteria: dict) -> list[EnrichedLis
     seen: set[str] = set()
 
     for listing in listings:
+        if matched_deal_breaker(listing, criteria):
+            continue
+
         key = duplicate_key(listing)
         if key in seen:
             continue

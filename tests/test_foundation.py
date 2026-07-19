@@ -61,6 +61,23 @@ class ScoringTests(unittest.TestCase):
         self.assertLess(result.score, 75)
         self.assertIn("unavailable", result.explanation)
 
+    def test_fedex_routes_are_excluded_by_deal_breaker(self):
+        criteria = load_criteria()
+        listing = Listing(
+            title="11 Carveout FedEx P&D Routes",
+            source="BizQuest",
+            listing_url="https://example.com/fedex-routes",
+            industry="Transportation & Logistics",
+            location="Eastern New York",
+            asking_price=1_119_000,
+            cash_flow=600_000,
+            description="FedEx pickup and delivery routes.",
+        )
+        result = score_listing(listing, criteria)
+        self.assertEqual(result.score, 0)
+        self.assertEqual(result.status, "Excluded")
+        self.assertIn("deal breaker", result.explanation)
+
 
 class PipelineTests(unittest.TestCase):
     def test_pipeline_removes_duplicate_sample_listing(self):
@@ -69,7 +86,8 @@ class PipelineTests(unittest.TestCase):
         enriched = enrich_listings(listings, criteria)
         self.assertEqual(len(active_marketplace_names()), 9)
         self.assertEqual(len(listings), 14)
-        self.assertEqual(len(enriched), 13)
+        self.assertEqual(len(enriched), 12)
+        self.assertTrue(all("fedex" not in item.listing.title.lower() for item in enriched))
 
     def test_pipeline_finds_qualified_sample_deals(self):
         criteria = load_criteria()

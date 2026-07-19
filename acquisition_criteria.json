@@ -45,7 +45,11 @@
     "seller_financing_is_positive": true
   },
   "must_have_traits": [],
-  "deal_breakers": [],
+  "deal_breakers": [
+    "FedEx routes",
+    "FedEx P&D routes",
+    "pickup and delivery routes"
+  ],
   "promising_score_threshold": 75,
   "selected_marketplaces": [
     {
