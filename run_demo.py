@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import argparse
 
-from deal_finder_ai.collectors.bizquest import collect_sample_listings
+from deal_finder_ai.collectors.marketplaces import active_marketplace_names, collect_priority_marketplace_samples
 from deal_finder_ai.criteria import load_criteria
 from deal_finder_ai.notion_sync import NotionSyncError, sync_to_notion
 from deal_finder_ai.pipeline import enrich_listings, qualified_listings
@@ -14,10 +14,11 @@ def main() -> int:
     args = parser.parse_args()
 
     criteria = load_criteria()
-    listings = collect_sample_listings()
+    listings = collect_priority_marketplace_samples()
     enriched = enrich_listings(listings, criteria)
     qualified = qualified_listings(enriched, criteria)
 
+    print(f"Checked {len(active_marketplace_names())} priority marketplaces.")
     print(f"Collected {len(listings)} sample listings.")
     print(f"Kept {len(enriched)} unique listings after duplicate detection.")
     print(f"{len(qualified)} listings scored {criteria['promising_score_threshold']}+.")
@@ -43,4 +44,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

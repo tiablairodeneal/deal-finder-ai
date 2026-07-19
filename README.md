@@ -7,8 +7,8 @@ The important design choice: **Notion is the only database and CRM**. This proje
 ## What v1 Does
 
 - Uses your acquisition criteria from `acquisition_criteria.json`
-- Starts with one marketplace: BizQuest
-- Uses realistic sample listings for the first safe demo workflow
+- Starts with your priority marketplace list
+- Uses realistic sample listings for the first safe multi-source demo workflow
 - Scores every listing from 0 to 100
 - Explains each score in plain English
 - Removes duplicates using the listing URL first
@@ -66,11 +66,7 @@ Edit `acquisition_criteria.json` when your thesis changes.
 
 This starter uses only the Python standard library for the core workflow.
 
-To run tests, install pytest if needed:
-
-```bash
-python -m pip install pytest
-```
+No package install is needed to run the demo or tests.
 
 ## Run The Demo
 
@@ -79,6 +75,12 @@ python run_demo.py
 ```
 
 This prints collected listings, duplicate handling, scores, and summaries.
+
+## Run Tests
+
+```bash
+python -m unittest discover -s tests -v
+```
 
 ## Save To Notion
 
@@ -107,15 +109,25 @@ Missing financial information gets 0 points for that category and is labeled una
 
 A listing is only marked Promising when it reaches the score threshold and passes the core fit checks: industry, location, asking price, and cash flow/SDE/EBITDA.
 
-## Why BizQuest First
+## Priority Marketplaces
 
-Your marketplace spreadsheet includes many good sources, but v1 should start with one practical public source. BizQuest is a good first candidate because its listings are public, broad, and often include asking price and cash flow fields.
+The current workflow checks these priority sources:
 
-For now, the collector uses sample data. Live collection should be added carefully and only for public pages that allow automation. Do not bypass logins, paywalls, CAPTCHAs, robots.txt, or other protections.
+- AcquisitionsDirect
+- AppBusinessBrokers
+- Axial
+- BizBuySell
+- BizQuest
+- FirstChoice Business Brokers
+- Merge
+- QuietLight
+- Website Closers
+
+For now, these collectors use sample data. Axial is explicitly marked login-gated and skipped for live collection unless there is an official export, API, or otherwise permitted workflow. Live collection should be added source-by-source and only for public pages that allow automation. Do not bypass logins, paywalls, CAPTCHAs, robots.txt, or other protections.
 
 ## Roadmap
 
-1. Add a respectful live BizQuest collector for allowed public listing pages.
+1. Add respectful live collectors one source at a time, starting with the public sources that expose enough financial data.
 2. Add a daily run that saves new qualified deals to Notion.
 3. Add a daily digest view or message from Notion records.
 4. Add marketplace-specific collectors one at a time.

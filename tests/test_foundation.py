@@ -1,6 +1,6 @@
 import unittest
 
-from deal_finder_ai.collectors.bizquest import collect_sample_listings
+from deal_finder_ai.collectors.marketplaces import active_marketplace_names, collect_priority_marketplace_samples
 from deal_finder_ai.criteria import load_criteria
 from deal_finder_ai.duplicates import duplicate_key, normalize_url
 from deal_finder_ai.models import Listing
@@ -55,16 +55,17 @@ class ScoringTests(unittest.TestCase):
 class PipelineTests(unittest.TestCase):
     def test_pipeline_removes_duplicate_sample_listing(self):
         criteria = load_criteria()
-        listings = collect_sample_listings()
+        listings = collect_priority_marketplace_samples()
         enriched = enrich_listings(listings, criteria)
-        self.assertEqual(len(listings), 5)
-        self.assertEqual(len(enriched), 4)
+        self.assertEqual(len(active_marketplace_names()), 9)
+        self.assertEqual(len(listings), 14)
+        self.assertEqual(len(enriched), 13)
 
     def test_pipeline_finds_qualified_sample_deals(self):
         criteria = load_criteria()
-        enriched = enrich_listings(collect_sample_listings(), criteria)
+        enriched = enrich_listings(collect_priority_marketplace_samples(), criteria)
         qualified = qualified_listings(enriched, criteria)
-        self.assertEqual(len(qualified), 3)
+        self.assertEqual(len(qualified), 10)
         self.assertTrue(all(item.score.score >= 75 for item in qualified))
 
 

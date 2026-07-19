@@ -47,14 +47,55 @@
   "must_have_traits": [],
   "deal_breakers": [],
   "promising_score_threshold": 75,
-  "selected_marketplace": {
-    "name": "BizQuest",
-    "url": "https://www.bizquest.com/businesses-for-sale/?q=bHQ9MzAsNDAsODA%3D",
-    "mode": "sample_data_for_v1"
-  },
+  "selected_marketplaces": [
+    {
+      "name": "AcquisitionsDirect",
+      "url": "https://acquisitionsdirect.com/buy/",
+      "mode": "sample_data_for_v1"
+    },
+    {
+      "name": "AppBusinessBrokers",
+      "url": "https://www.appbusinessbrokers.com/buy/",
+      "mode": "sample_data_for_v1"
+    },
+    {
+      "name": "Axial",
+      "url": "https://network.axial.net/received-deals/new",
+      "mode": "login_gated_skip_live_collection"
+    },
+    {
+      "name": "BizBuySell",
+      "url": "https://www.bizbuysell.com/",
+      "mode": "sample_data_for_v1"
+    },
+    {
+      "name": "BizQuest",
+      "url": "https://www.bizquest.com/businesses-for-sale/?q=bHQ9MzAsNDAsODA%3D",
+      "mode": "sample_data_for_v1"
+    },
+    {
+      "name": "FirstChoice Business Brokers",
+      "url": "https://businessesforsaleinnewyorkcity.com",
+      "mode": "sample_data_for_v1"
+    },
+    {
+      "name": "Merge",
+      "url": "https://gomerge.com/agencies-for-sale/",
+      "mode": "sample_data_for_v1"
+    },
+    {
+      "name": "QuietLight",
+      "url": "https://quietlight.com/listings/",
+      "mode": "sample_data_for_v1"
+    },
+    {
+      "name": "Website Closers",
+      "url": "https://www.websiteclosers.com/businesses-for-sale/",
+      "mode": "sample_data_for_v1"
+    }
+  ],
   "notion": {
     "database_url": "https://app.notion.com/p/e0f23824e98d4e459c3466c05e767239",
     "data_source_id": "collection://f8b80373-c414-47d2-a1ed-6f482b9f22c3"
   }
 }
-
