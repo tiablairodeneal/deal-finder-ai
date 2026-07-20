@@ -1,6 +1,7 @@
 import unittest
 
 from deal_finder_ai.collectors.marketplaces import active_marketplace_names, collect_priority_marketplace_samples
+from deal_finder_ai.collectors.live import _robots_text_allows, _split_cards
 from deal_finder_ai.criteria import load_criteria
 from deal_finder_ai.duplicates import duplicate_key, normalize_url
 from deal_finder_ai.models import EnrichedListing, Listing, ScoreResult
@@ -108,6 +109,30 @@ class PipelineTests(unittest.TestCase):
         listings = collect_priority_marketplace_samples()
         urls = {listing.listing_url for listing in listings if listing.listing_url}
         self.assertTrue(generic_urls.isdisjoint(urls))
+
+
+class LiveCollectorTests(unittest.TestCase):
+    def test_robot_parser_allows_normal_path_when_query_urls_are_blocked(self):
+        robots = """
+        User-agent: *
+        Disallow: /?
+        Disallow: /wp-admin/
+        Allow: /wp-admin/admin-ajax.php
+        """
+        self.assertTrue(_robots_text_allows(robots, "https://example.com/businesses-for-sale/"))
+        self.assertFalse(_robots_text_allows(robots, "https://example.com/?s=listing"))
+
+    def test_quietlight_card_split_ignores_nested_card_classes(self):
+        markup = """
+        <div class="listing-card grid-item match-grid public-listing all ecommerce">
+          <a href="https://quietlight.com/listings/123/" class="listing-card__link"></a>
+          <div class="listing-card__price">$1,250,000</div>
+          <div class="listing-card__profit-item" data-revenue="2000000"></div>
+        </div>
+        """
+        cards = _split_cards(markup, '<div class="listing-card grid-item')
+        self.assertEqual(len(cards), 1)
+        self.assertIn("listing-card__price", cards[0])
 
 
 class NotionSyncTests(unittest.TestCase):

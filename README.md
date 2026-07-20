@@ -8,7 +8,7 @@ The important design choice: **Notion is the only database and CRM**. This proje
 
 - Uses your acquisition criteria from `acquisition_criteria.json`
 - Starts with your priority marketplace list
-- Uses realistic sample listings for the first safe multi-source demo workflow
+- Uses live public listing pages where practical, with sample data kept for tests and demos
 - Scores every listing from 0 to 100
 - Explains each score in plain English
 - Removes duplicates using the listing URL first
@@ -69,13 +69,19 @@ This starter uses only the Python standard library for the core workflow.
 
 No package install is needed to run the demo or tests.
 
-## Run The Demo
+## Run The Deal Finder
 
 ```bash
 python run_demo.py
 ```
 
-This prints collected listings, duplicate handling, scores, and summaries.
+By default, this checks live public marketplace pages where practical. It prints source-by-source collection notes, duplicate handling, scores, and summaries.
+
+For a repeatable offline sample run:
+
+```bash
+python run_demo.py --sample-only
+```
 
 ## Run Tests
 
@@ -124,7 +130,15 @@ The current workflow checks these priority sources:
 - QuietLight
 - Website Closers
 
-For now, these collectors use sample data. Axial is explicitly marked login-gated and skipped for live collection unless there is an official export, API, or otherwise permitted workflow. Live collection should be added source-by-source and only for public pages that allow automation. Do not bypass logins, paywalls, CAPTCHAs, robots.txt, or other protections.
+The live job only reads public pages that are practical to fetch respectfully.
+
+- Live public listing cards: Merge, QuietLight, Website Closers
+- Live public detail links when visible: AcquisitionsDirect
+- Public page checked, no static listing details currently exposed: AppBusinessBrokers, FirstChoice Business Brokers
+- Skipped when blocked from this runtime: BizBuySell, BizQuest
+- Skipped because login-gated: Axial
+
+Do not bypass logins, paywalls, CAPTCHAs, robots.txt, bot blocks, or other protections. Sample data remains available for local tests with `python run_demo.py --sample-only`.
 
 ## Roadmap
 

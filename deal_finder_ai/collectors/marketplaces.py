@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from deal_finder_ai.collectors.bizquest import collect_sample_listings as collect_bizquest_samples
+from deal_finder_ai.collectors.live import CollectorResult, collect_live_marketplace_listings
 from deal_finder_ai.models import Listing
 
 
@@ -18,14 +19,14 @@ PRIORITY_MARKETPLACES: tuple[Marketplace, ...] = (
     Marketplace(
         name="AcquisitionsDirect",
         url="https://acquisitionsdirect.com/buy/",
-        collection_mode="sample_data_for_v1",
-        notes="Public site with visible featured listings; live extraction should be added carefully.",
+        collection_mode="live_public_when_listings_visible",
+        notes="Public site; current buy page is checked for public listing detail links.",
     ),
     Marketplace(
         name="AppBusinessBrokers",
         url="https://www.appbusinessbrokers.com/buy/",
-        collection_mode="sample_data_for_v1",
-        notes="Public buy page, but financial fields may be sparse or unavailable.",
+        collection_mode="live_public_when_listings_visible",
+        notes="Public buy page is checked, but it may not expose listing detail pages in static HTML.",
     ),
     Marketplace(
         name="Axial",
@@ -36,40 +37,52 @@ PRIORITY_MARKETPLACES: tuple[Marketplace, ...] = (
     Marketplace(
         name="BizBuySell",
         url="https://www.bizbuysell.com/",
-        collection_mode="sample_data_for_v1",
-        notes="Large public marketplace. Respect robots.txt crawl delay and avoid member/broker areas.",
+        collection_mode="skipped_when_blocked",
+        notes="Large marketplace. The job skips live collection if the site blocks automated public fetches.",
     ),
     Marketplace(
         name="BizQuest",
         url="https://www.bizquest.com/businesses-for-sale/?q=bHQ9MzAsNDAsODA%3D",
-        collection_mode="sample_data_for_v1",
-        notes="Initial v1 source with broad public listing coverage.",
+        collection_mode="skipped_when_blocked",
+        notes="The job skips live collection if the site blocks automated public fetches.",
     ),
     Marketplace(
         name="FirstChoice Business Brokers",
         url="https://businessesforsaleinnewyorkcity.com",
-        collection_mode="sample_data_for_v1",
-        notes="New York-focused broker source.",
+        collection_mode="live_public_when_listings_visible",
+        notes="New York-focused broker source; static page is checked for listing detail links.",
     ),
     Marketplace(
         name="Merge",
         url="https://gomerge.com/agencies-for-sale/",
-        collection_mode="sample_data_for_v1",
-        notes="Agency-focused source; useful for professional services and digital agencies.",
+        collection_mode="live_public",
+        notes="Agency-focused source with public listing cards.",
     ),
     Marketplace(
         name="QuietLight",
         url="https://quietlight.com/listings/",
-        collection_mode="sample_data_for_v1",
-        notes="Curated online-business broker source.",
+        collection_mode="live_public",
+        notes="Curated online-business broker source with public listing cards.",
     ),
     Marketplace(
         name="Website Closers",
         url="https://www.websiteclosers.com/businesses-for-sale/",
-        collection_mode="sample_data_for_v1",
-        notes="Digital, e-commerce, SaaS, and internet business broker source.",
+        collection_mode="live_public",
+        notes="Digital, e-commerce, SaaS, and internet business broker source with public listing cards.",
     ),
 )
+
+
+def collect_priority_marketplace_listings(max_per_source: int = 10) -> list[Listing]:
+    results = collect_priority_marketplace_results(max_per_source=max_per_source)
+    listings: list[Listing] = []
+    for result in results:
+        listings.extend(result.listings)
+    return listings
+
+
+def collect_priority_marketplace_results(max_per_source: int = 10) -> list[CollectorResult]:
+    return collect_live_marketplace_listings(max_per_source=max_per_source)
 
 
 def collect_priority_marketplace_samples() -> list[Listing]:
