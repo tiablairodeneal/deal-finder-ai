@@ -79,6 +79,23 @@ class ScoringTests(unittest.TestCase):
         self.assertEqual(result.status, "Excluded")
         self.assertIn("deal breaker", result.explanation)
 
+    def test_amazon_fba_businesses_are_excluded_by_deal_breaker(self):
+        criteria = load_criteria()
+        listing = Listing(
+            title="Turnkey Amazon FBA Business - Proven Consumer Brand",
+            source="AcquisitionsDirect",
+            listing_url="https://example.com/amazon-fba-business",
+            industry="E-Commerce & Digital",
+            location="Fully online",
+            asking_price=2_500_000,
+            cash_flow=750_000,
+            description="Amazon FBA brand with strong marketplace history.",
+        )
+        result = score_listing(listing, criteria)
+        self.assertEqual(result.score, 0)
+        self.assertEqual(result.status, "Excluded")
+        self.assertIn("Amazon FBA", result.explanation)
+
 
 class PipelineTests(unittest.TestCase):
     def test_pipeline_removes_duplicate_sample_listing(self):

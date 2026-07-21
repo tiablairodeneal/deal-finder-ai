@@ -58,7 +58,7 @@ Views created:
 - Asking price: $1M to $6M
 - Cash flow/SDE: $500k to $2M
 - Seller financing: positive signal, not required
-- Deal breakers: FedEx route listings, including FedEx P&D and pickup/delivery route listings
+- Deal breakers: FedEx route listings and Amazon FBA businesses
 - Promising score: 75+
 
 Edit `acquisition_criteria.json` when your thesis changes.

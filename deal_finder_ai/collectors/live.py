@@ -477,14 +477,14 @@ def _infer_location(text: str) -> str | None:
 
 def _infer_industry(text: str) -> str | None:
     lowered = text.lower()
-    if any(term in lowered for term in ["digital marketing", "seo", "lead generation", "agency", "business services"]):
-        return "Business Services"
-    if any(term in lowered for term in ["ecommerce", "e-commerce", "dtc", "amazon", "fba", "shopify"]):
-        return "E-Commerce & Digital"
     if any(term in lowered for term in ["wellness", "supplement", "skincare", "pet health"]):
         return "Wellness & Supplements"
     if any(term in lowered for term in ["saas", "software", "app "]):
         return "Technology & Digital"
+    if any(term in lowered for term in ["ecommerce", "e-commerce", "dtc", "amazon", "fba", "shopify"]):
+        return "E-Commerce & Digital"
+    if any(term in lowered for term in ["digital marketing", "seo", "lead generation", "agency", "business services"]):
+        return "Business Services"
     if any(term in lowered for term in ["media", "content", "pr ", "public relations"]):
         return "Media & Content"
     if any(term in lowered for term in ["construction", "contractor", "home services"]):
