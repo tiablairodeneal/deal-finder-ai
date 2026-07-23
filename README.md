@@ -106,38 +106,24 @@ python run_demo.py --sync-notion
 
 The sync checks existing Notion duplicate keys before creating new records.
 
-## Hosted Daily Automation
+## Daily Automation
 
-The production daily run is hosted in GitHub Actions at `.github/workflows/daily-deal-finder.yml`.
+The production daily run is a Codex thread heartbeat attached to the local Mac workspace. It runs at **9:00 a.m. America/New_York every day** and uses the connected Notion connector/OAuth for Notion writes.
 
-It runs the same repository workflow as the local command:
+The heartbeat production path is:
 
 1. Run the automated tests.
 2. Collect live public listings from the configured sources.
 3. Apply exclusions, scoring, industry assessment, and duplicate detection.
-4. Create or update qualified records in the same Notion deals database.
+4. Create or update qualified records in the same Notion deals database using the connected Notion connector.
 
-The workflow is scheduled for **9:00 a.m. America/New_York every day**. GitHub Actions schedules are written in UTC, so the workflow registers both UTC times that can map to 9:00 a.m. New York:
+Because this is a local Codex heartbeat, the Mac must be awake, online, and the Codex workspace must be available at the scheduled time.
 
-- `13:00 UTC` during Eastern Daylight Time
-- `14:00 UTC` during Eastern Standard Time
+Do not add standalone Notion credentials for the heartbeat path. The heartbeat should not require `NOTION_TOKEN` or `NOTION_DEALS_DATABASE_ID`.
 
-A local-time guard inside the job checks `America/New_York` and skips the non-matching trigger. This keeps the run at 9:00 a.m. New York time when daylight saving time changes.
+### Manual GitHub Actions Test
 
-### Required GitHub Repository Secrets
-
-Configure these in GitHub:
-
-`Settings` -> `Secrets and variables` -> `Actions` -> `Repository secrets`
-
-- `NOTION_TOKEN`
-- `NOTION_DEALS_DATABASE_ID`
-
-The current live research provider and public scrapers do not require paid API credentials. If a future research provider or scraper requires credentials, add them as repository secrets and pass them to the workflow as environment variables. Do not commit credential values.
-
-### Manual Run
-
-In GitHub, open:
+GitHub Actions is kept manual-only for safe testing. It does not have a daily schedule. To run a dry-run test in GitHub, open:
 
 `Actions` -> `Daily Deal Finder` -> `Run workflow`
 
@@ -147,11 +133,11 @@ Inputs:
 - `dry_run=false`: production mode that creates or updates qualified deals in Notion.
 - `max_per_source`: reduce this for a smaller test run.
 
-The workflow uses GitHub Actions concurrency so only one production run can execute at a time. This prevents overlapping scheduled/manual runs from creating duplicate rows.
+Do not use GitHub Actions as the daily production runner while the Codex heartbeat is active, or the two systems could create duplicate daily runs.
 
 ### Monitoring Failures
 
-Each run writes a concise GitHub Actions summary with:
+Each manual GitHub Actions run writes a concise summary with:
 
 - Listings collected
 - Listings retained after exclusions and deduplication
@@ -163,9 +149,9 @@ Each run writes a concise GitHub Actions summary with:
 
 If a run fails, GitHub uploads non-secret run artifacts from `.deal_finder_run/` and `.deal_finder_cache/` for troubleshooting. Secret values are not printed by the workflow.
 
-### Cache Persistence
+### GitHub Actions Cache
 
-Industry research records are restored and saved with `actions/cache` from `.deal_finder_cache`. The cache key includes the operating system and `acquisition_criteria.json`, so normal runs reuse useful research while criteria changes can start a fresh cache.
+Manual GitHub Actions runs restore and save `.deal_finder_cache` with `actions/cache`. The local heartbeat uses the local `.deal_finder_cache` in the Mac workspace.
 
 ## Scoring System
 
