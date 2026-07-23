@@ -18,6 +18,7 @@ from deal_finder_ai.collectors.live import (
 from deal_finder_ai.criteria import load_criteria
 from deal_finder_ai.duplicates import duplicate_key, normalize_url
 from deal_finder_ai.industry_assessment import (
+    APPROVED_SUBINDUSTRY_LABELS,
     SCORING_METHODOLOGY_VERSION,
     IndustryResearchCache,
     IndustryResearchInput,
@@ -491,13 +492,45 @@ class IndustryAssessmentTests(unittest.TestCase):
         self.assertEqual(classify_subindustry(first).name, "Commercial Laundry")
         self.assertEqual(classify_subindustry(second).name, "Commercial Laundry")
 
+    def test_classifier_only_emits_approved_subindustry_labels(self):
+        criteria = load_criteria()
+        self.assertEqual(APPROVED_SUBINDUSTRY_LABELS, set(criteria["target_industries"]))
+        examples = [
+            Listing(title="B2B SaaS platform", source="UnitTest", industry="Technology & Digital"),
+            Listing(title="DTC ecommerce apparel brand", source="UnitTest", industry="E-Commerce & Digital"),
+            Listing(title="Digital marketing and SEO agency", source="UnitTest", industry="Business Services"),
+            Listing(title="Commercial landscaping company", source="UnitTest", industry="Home & Garden"),
+            Listing(title="Child care center", source="UnitTest", industry="Education & Training"),
+            Listing(title="Medical courier route", source="UnitTest", industry="Transportation & Logistics"),
+            Listing(title="Unclear local operating company", source="UnitTest"),
+        ]
+        emitted = [classify_subindustry(listing).name for listing in examples]
+        self.assertEqual([label for label in emitted if label not in APPROVED_SUBINDUSTRY_LABELS], [])
+
+    def test_classifier_maps_old_display_labels_to_approved_subindustries(self):
+        examples = {
+            "B2B SaaS platform": "Internet Related",
+            "DTC ecommerce apparel brand": "E-Commerce & E-Tailers",
+            "Digital marketing and SEO agency": "Other Business Services",
+            "Public relations agency": "Media & Content",
+            "Commercial landscaping company": "Landscaping Services",
+            "Child care center": "Day Care & Child Care Centers",
+            "Medical courier route": "Other Transportation",
+            "Commercial printing and signage shop": "Print, Signage & Display",
+            "Health and wellness supplement brand": "Wellness & Supplements",
+            "Electrical contractor and HVAC business": "Specialty Trades",
+        }
+        for title, expected in examples.items():
+            with self.subTest(title=title):
+                self.assertEqual(classify_subindustry(Listing(title=title, source="UnitTest")).name, expected)
+
     def test_broad_or_uncertain_classification_cannot_receive_a_or_b(self):
-        classification = SubindustryClassification("B2B Services", "B2B Services", "low", broad_or_uncertain=True)
+        classification = SubindustryClassification("Other Business Services", "Other Business Services", "low", broad_or_uncertain=True)
         record = score_industry(classification, "United States", _research_with_ratings(5), date(2026, 7, 23))
         self.assertEqual(record["industry_grade"], "C")
 
     def test_component_and_total_scores_are_capped(self):
-        classification = SubindustryClassification("SaaS", "SaaS", "medium")
+        classification = SubindustryClassification("Internet Related", "Internet Related", "medium")
         record = score_industry(classification, "United States", _research_with_ratings(9), date(2026, 7, 23))
         self.assertLessEqual(record["industry_outlook_score"], 40)
         self.assertLessEqual(record["porters_five_forces_score"], 30)
@@ -505,7 +538,7 @@ class IndustryAssessmentTests(unittest.TestCase):
         self.assertLessEqual(record["industry_score"], 100)
 
     def test_a_requires_component_minimums(self):
-        classification = SubindustryClassification("SaaS", "SaaS", "medium")
+        classification = SubindustryClassification("Internet Related", "Internet Related", "medium")
         research = _research_with_ratings(5)
         for score in research["eta_quality_scores"].values():
             score["rating"] = 2
@@ -513,7 +546,7 @@ class IndustryAssessmentTests(unittest.TestCase):
         self.assertNotEqual(record["industry_grade"], "A")
 
     def test_any_porter_force_rated_one_prevents_a(self):
-        classification = SubindustryClassification("SaaS", "SaaS", "medium")
+        classification = SubindustryClassification("Internet Related", "Internet Related", "medium")
         research = _research_with_ratings(5)
         research["porters_force_scores"]["buyer_power"]["rating"] = 1
         record = score_industry(classification, "United States", research, date(2026, 7, 23))

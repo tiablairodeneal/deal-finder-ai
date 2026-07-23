@@ -45,6 +45,80 @@ REQUIRED_DIMENSION_GROUPS = {
 _CACHE_LOCK = Lock()
 _CACHE_KEY_LOCKS: dict[str, Lock] = {}
 LOGGER = logging.getLogger(__name__)
+APPROVED_SUBINDUSTRY_LABELS = {
+    "Business Services",
+    "Commercial Laundry",
+    "Conferences & Trade Shows",
+    "Office Equipment Distribution",
+    "Other Business Services",
+    "Other Office",
+    "Professional Services",
+    "Other Professional Services",
+    "Real Estate Services",
+    "Security & Protection Services",
+    "Staffing",
+    "Construction & Building Services",
+    "Building Materials & Supply",
+    "Flooring",
+    "Insulation & Coating",
+    "Locksmiths",
+    "Painting Business",
+    "Specialty Trades",
+    "Consumer Products & Services",
+    "Clothing & Fashion",
+    "Other Clothing & Fashion",
+    "Personal Products & Services",
+    "Other Personal Products & Services",
+    "Education & Training",
+    "Day Care & Child Care Centers",
+    "Other Educational Services",
+    "Schools",
+    "Seminars",
+    "Test Preparation",
+    "Food & Beverage",
+    "Agricultural Production",
+    "Distilleries & Alcohol Production",
+    "Food Production & Packaging",
+    "Other Food & Beverage",
+    "Vending Machines & Routes",
+    "Healthcare & Wellness",
+    "Behavioral Health",
+    "Health Clubs, Gyms & Fitness Centers",
+    "Other Health & Medical",
+    "Physical Therapy",
+    "Wellness & Supplements",
+    "Home & Garden",
+    "Household Maintenance",
+    "Landscaping Services",
+    "Nurseries & Garden Centers",
+    "Other Home & Garden",
+    "Hospitality, Entertainment & Leisure",
+    "Art Galleries & Museums",
+    "Other Entertainment & Leisure",
+    "Sports Teams & Facilities",
+    "Travel Agents",
+    "Industrials & Manufacturing",
+    "Industrial Services",
+    "Manufacturing",
+    "Textile & Materials Manufacturing",
+    "Textiles",
+    "Media & Communications",
+    "Media & Content",
+    "Other Media & Communications",
+    "Print, Signage & Display",
+    "Radio Stations",
+    "Technology & Digital",
+    "B2B",
+    "E-Commerce & Digital",
+    "E-Commerce & E-Tailers",
+    "Internet Related",
+    "Transportation & Logistics",
+    "Auto Parts Recycling",
+    "Other Transportation",
+    "Parking",
+    "Passenger Transport",
+    "Taxi & Limousine",
+}
 
 
 class IndustryResearchError(RuntimeError):
@@ -183,13 +257,13 @@ def classify_subindustry(listing: Listing) -> SubindustryClassification:
         ("Physical Therapy", ["physical therapy", "physiotherapy", "pt clinic"], False),
         ("Conferences & Trade Shows", ["conference", "trade show", "expo ", "event production"], False),
         ("Office Equipment Distribution", ["office equipment", "copier", "printer leasing"], False),
-        ("E-Commerce Brands", ["ecommerce", "e-commerce", "dtc", "online brand"], False),
+        ("E-Commerce & E-Tailers", ["ecommerce", "e-commerce", "dtc", "online brand"], False),
         ("Behavioral Health", ["behavioral health", "mental health", "aba therapy", "addiction"], False),
-        ("Child Care Centers", ["child care", "childcare", "daycare", "day care"], False),
+        ("Day Care & Child Care Centers", ["child care", "childcare", "daycare", "day care"], False),
         ("Health Clubs, Gyms & Fitness Centers", ["health club", "gym", "fitness center", "fitness studio"], False),
-        ("Commercial Landscaping", ["landscaping", "lawn care", "grounds maintenance"], False),
+        ("Landscaping Services", ["landscaping", "lawn care", "grounds maintenance"], False),
         ("Commercial Laundry", ["commercial laundry", "linen", "uniform rental"], False),
-        ("Medical Courier", ["medical courier", "lab courier", "healthcare courier"], False),
+        ("Other Transportation", ["medical courier", "lab courier", "healthcare courier"], False),
         ("Taxi & Limousine", ["taxi", "limousine", "black car"], False),
         ("Vending Machines & Routes", ["vending", "micro market", "route"], False),
         ("Security & Protection Services", ["security guard", "security services", "alarm", "protection services"], False),
@@ -201,17 +275,17 @@ def classify_subindustry(listing: Listing) -> SubindustryClassification:
         ("Insulation & Coating", ["insulation", "coating", "spray foam"], False),
         ("Locksmiths", ["locksmith"], False),
         ("Painting Business", ["painting business", "painting contractor", "paint contractor"], False),
-        ("Industrial Equipment Maintenance", ["industrial equipment", "equipment maintenance", "machine repair"], False),
-        ("Commercial Printing", ["printing", "signage", "display"], False),
-        ("Digital Marketing Agencies", ["digital marketing", "lead generation", "seo", "agency"], False),
-        ("Public Relations Agencies", ["pr agency", "public relations"], False),
-        ("SaaS", ["saas", "software as a service"], False),
+        ("Industrial Services", ["industrial equipment", "equipment maintenance", "machine repair"], False),
+        ("Print, Signage & Display", ["printing", "signage", "display"], False),
+        ("Media & Content", ["pr agency", "public relations"], False),
+        ("Other Business Services", ["digital marketing", "lead generation", "seo", "agency"], False),
+        ("Internet Related", ["saas", "software as a service"], False),
         ("Auto Parts Recycling", ["auto parts recycling", "salvage yard"], False),
         ("Parking", ["parking lot", "parking garage", "parking management"], False),
-        ("Health & Wellness Supplements", ["supplement", "wellness brand", "health brand"], False),
+        ("Wellness & Supplements", ["supplement", "wellness brand", "health brand"], False),
         ("Clothing & Fashion", ["clothing", "fashion", "apparel", "footwear"], False),
         ("Household Maintenance", ["home maintenance", "household maintenance", "home repair"], False),
-        ("Specialty Trade Contractors", ["plumbing", "electrical contractor", "hvac", "roofing"], False),
+        ("Specialty Trades", ["plumbing", "electrical contractor", "hvac", "roofing"], False),
         ("Professional Services", ["professional services", "consulting"], True),
     ]
     for name, keywords, broad in rules:
@@ -221,14 +295,14 @@ def classify_subindustry(listing: Listing) -> SubindustryClassification:
     if listing.industry:
         fallback = _narrowest_defensible(listing.industry)
         return SubindustryClassification(name=fallback, normalized=fallback, confidence="low", broad_or_uncertain=True)
-    return SubindustryClassification(name="Unclassified Services", normalized="Unclassified Services", confidence="low", broad_or_uncertain=True)
+    return SubindustryClassification(name="Other Business Services", normalized="Other Business Services", confidence="low", broad_or_uncertain=True)
 
 
 def regulatory_geography_for(listing: Listing, classification: SubindustryClassification) -> str:
     regulated = {
         "Behavioral Health",
-        "Child Care Centers",
-        "Medical Courier",
+        "Day Care & Child Care Centers",
+        "Other Transportation",
         "Physical Therapy",
         "Taxi & Limousine",
     }
@@ -743,10 +817,10 @@ def _is_cache_valid(record: dict[str, Any], process_date: date) -> bool:
 def _requires_batch_regulatory_check(classification: SubindustryClassification) -> bool:
     return classification.name in {
         "Behavioral Health",
-        "Child Care Centers",
+        "Day Care & Child Care Centers",
         "Financial Services",
-        "Healthcare Services",
-        "Medical Courier",
+        "Other Health & Medical",
+        "Other Transportation",
         "Physical Therapy",
         "Taxi & Limousine",
     }
@@ -769,20 +843,23 @@ def _lock_for_cache_key(cache_key: str) -> Lock:
 
 def _narrowest_defensible(industry: str) -> str:
     broad_map = {
-        "Business Services": "B2B Services",
-        "Healthcare": "Healthcare Services",
-        "Healthcare & Wellness": "Healthcare Services",
-        "Technology & Digital": "Digital Businesses",
-        "E-Commerce & Digital": "E-Commerce Businesses",
-        "E-Commerce & E-Tailers": "E-Commerce Businesses",
-        "Transportation & Logistics": "Transportation Services",
-        "Consumer": "Consumer Services",
-        "Consumer Products & Services": "Consumer Services",
-        "Education & Training": "Education Services",
-        "Hospitality, Entertainment & Leisure": "Hospitality and Leisure",
-        "Industrials & Manufacturing": "Industrial Manufacturing",
+        "Business Services": "Other Business Services",
+        "Healthcare": "Other Health & Medical",
+        "Healthcare & Wellness": "Other Health & Medical",
+        "Technology & Digital": "Internet Related",
+        "E-Commerce & Digital": "E-Commerce & E-Tailers",
+        "E-Commerce & E-Tailers": "E-Commerce & E-Tailers",
+        "Transportation & Logistics": "Other Transportation",
+        "Consumer": "Personal Products & Services",
+        "Consumer Products & Services": "Personal Products & Services",
+        "Education & Training": "Other Educational Services",
+        "Hospitality, Entertainment & Leisure": "Other Entertainment & Leisure",
+        "Industrials & Manufacturing": "Manufacturing",
     }
-    return broad_map.get(industry, industry)
+    fallback = broad_map.get(industry, industry)
+    if fallback in APPROVED_SUBINDUSTRY_LABELS:
+        return fallback
+    return "Other Business Services"
 
 
 def _base_research(
@@ -864,7 +941,7 @@ def _research_templates() -> dict[str, dict[str, Any]]:
             transferability_rating=2,
             buyer_rating=2,
         ),
-        "Commercial Landscaping": _base_research(
+        "Landscaping Services": _base_research(
             assessment="Recurring maintenance contracts and acquisition supply are attractive; low entry barriers and labor pressure create meaningful competition.",
             entrants_rating=2,
             supplier_rating=2,
@@ -878,7 +955,7 @@ def _research_templates() -> dict[str, dict[str, Any]]:
             buyer_rating=2,
             repeat_rating=4,
         ),
-        "Commercial Printing": _base_research(
+        "Print, Signage & Display": _base_research(
             assessment="Repeat B2B demand supports retention, but digital substitutes, equipment investment and price competition limit long-term attractiveness.",
             outlook_rating=2,
             disruption_rating=2,
@@ -886,14 +963,14 @@ def _research_templates() -> dict[str, dict[str, Any]]:
             rivalry_rating=2,
             economics_rating=2,
         ),
-        "Medical Courier": _base_research(
+        "Other Transportation": _base_research(
             assessment="Recurring time-critical routes create switching costs; driver availability, insurance requirements and concentrated healthcare buyers can pressure margins.",
             buyer_rating=2,
             supplier_rating=2,
             repeat_rating=5,
             transferability_rating=3,
         ),
-        "Digital Marketing Agencies": _base_research(
+        "Other Business Services": _base_research(
             assessment="Recurring client work and low capex are attractive; AI disruption, low entry barriers and buyer churn constrain durability.",
             outlook_rating=4,
             disruption_rating=2,
@@ -902,7 +979,7 @@ def _research_templates() -> dict[str, dict[str, Any]]:
             rivalry_rating=2,
             economics_rating=4,
         ),
-        "E-Commerce Brands": _base_research(
+        "E-Commerce & E-Tailers": _base_research(
             assessment="Online demand and scalable operations are attractive; platform dependence, paid-media costs and low entry barriers pressure durability.",
             disruption_rating=3,
             entrants_rating=2,
@@ -911,7 +988,7 @@ def _research_templates() -> dict[str, dict[str, Any]]:
             rivalry_rating=2,
             economics_rating=3,
         ),
-        "SaaS": _base_research(
+        "Internet Related": _base_research(
             assessment="Recurring software revenue and strong cash conversion are attractive; AI disruption and buyer scrutiny require clear differentiation.",
             outlook_rating=5,
             disruption_rating=3,
@@ -920,7 +997,7 @@ def _research_templates() -> dict[str, dict[str, Any]]:
             economics_rating=5,
             transferability_rating=4,
         ),
-        "Health & Wellness Supplements": _base_research(
+        "Wellness & Supplements": _base_research(
             assessment="Wellness demand supports growth, but regulation, platform dependence and crowded brands create meaningful competitive pressure.",
             outlook_rating=4,
             regulation_rating=2,
@@ -928,7 +1005,7 @@ def _research_templates() -> dict[str, dict[str, Any]]:
             supplier_rating=2,
             rivalry_rating=2,
         ),
-        "Public Relations Agencies": _base_research(
+        "Media & Content": _base_research(
             assessment="Retainer demand can support retention, but client churn, low entry barriers and talent dependence limit industry quality.",
             entrants_rating=2,
             buyer_rating=2,
@@ -936,7 +1013,7 @@ def _research_templates() -> dict[str, dict[str, Any]]:
             rivalry_rating=2,
             transferability_rating=2,
         ),
-        "Specialty Trade Contractors": _base_research(
+        "Specialty Trades": _base_research(
             assessment="Required maintenance and skilled trade scarcity support demand; labor dependence and local bidding pressure constrain transferability.",
             tailwind_rating=4,
             entrants_rating=3,
