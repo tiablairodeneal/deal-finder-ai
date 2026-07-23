@@ -7,7 +7,13 @@ from threading import Lock
 from unittest.mock import patch
 
 from deal_finder_ai.collectors.marketplaces import active_marketplace_names, collect_priority_marketplace_samples
-from deal_finder_ai.collectors.live import _robots_text_allows, _split_cards
+from deal_finder_ai.collectors.live import (
+    _is_link_business_detail,
+    _jsonld_listing_items,
+    _money_value,
+    _robots_text_allows,
+    _split_cards,
+)
 from deal_finder_ai.criteria import load_criteria
 from deal_finder_ai.duplicates import duplicate_key, normalize_url
 from deal_finder_ai.industry_assessment import (
@@ -123,7 +129,10 @@ class PipelineTests(unittest.TestCase):
         criteria = load_criteria()
         listings = collect_priority_marketplace_samples()
         enriched = enrich_listings(listings, criteria)
-        self.assertEqual(len(active_marketplace_names()), 9)
+        self.assertGreaterEqual(len(active_marketplace_names()), 16)
+        self.assertIn("BusinessesForSale", active_marketplace_names())
+        self.assertIn("BusinessExits", active_marketplace_names())
+        self.assertIn("LINK", active_marketplace_names())
         self.assertEqual(len(listings), 14)
         self.assertEqual(len(enriched), 12)
         self.assertTrue(all("fedex" not in item.listing.title.lower() for item in enriched))
@@ -178,6 +187,30 @@ class LiveCollectorTests(unittest.TestCase):
         cards = _split_cards(markup, '<div class="listing-card grid-item')
         self.assertEqual(len(cards), 1)
         self.assertIn("listing-card__price", cards[0])
+
+    def test_jsonld_listing_parser_accepts_type_lists(self):
+        markup = """
+        <script type="application/ld+json">
+        {"@type": "ItemList", "itemListElement": [
+          {"@type": "ListItem", "item": {"@type": ["Product", "Thing"], "name": "NY Services Business", "url": "https://example.com/deal"}}
+        ]}
+        </script>
+        """
+        self.assertEqual(_jsonld_listing_items(markup)[0]["name"], "NY Services Business")
+
+    def test_money_parser_handles_million_suffixes(self):
+        self.assertEqual(_money_value("$4.3 million"), 4_300_000)
+        self.assertEqual(_money_value("$1.4M"), 1_400_000)
+
+    def test_link_business_detail_filter_excludes_metric_links(self):
+        self.assertTrue(
+            _is_link_business_detail(
+                "https://linkbusiness.com/businesses-for-sale/NYC00128/Upscale-French-restaurant-in-NYC"
+            )
+        )
+        self.assertFalse(
+            _is_link_business_detail("https://linkbusiness.com/businesses-for-sale/listingPrice?range={$360,000}")
+        )
 
 
 class NotionSyncTests(unittest.TestCase):

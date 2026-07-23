@@ -81,9 +81,34 @@
       "mode": "skipped_when_blocked"
     },
     {
+      "name": "BusinessBroker",
+      "url": "https://www.businessbroker.net/state/new-york-businesses-for-sale.aspx",
+      "mode": "live_public"
+    },
+    {
+      "name": "BusinessesForSale",
+      "url": "https://us.businessesforsale.com/us/search/businesses-for-sale-in-new-york",
+      "mode": "live_public_jsonld"
+    },
+    {
+      "name": "BusinessExits",
+      "url": "https://businessexits.com/listings/",
+      "mode": "live_public"
+    },
+    {
+      "name": "BusinessMart",
+      "url": "https://www.businessmart.com/businesses-for-sale.php",
+      "mode": "live_public"
+    },
+    {
       "name": "FirstChoice Business Brokers",
       "url": "https://businessesforsaleinnewyorkcity.com",
       "mode": "live_public_when_listings_visible"
+    },
+    {
+      "name": "LINK",
+      "url": "https://linkbusiness.com/businesses-for-sale/",
+      "mode": "live_public"
     },
     {
       "name": "Merge",
@@ -93,6 +118,16 @@
     {
       "name": "QuietLight",
       "url": "https://quietlight.com/listings/",
+      "mode": "live_public"
+    },
+    {
+      "name": "SMERGERS",
+      "url": "https://www.smergers.com/businesses-for-sale-and-investment-opportunities/t2b/",
+      "mode": "live_public_partial_financials"
+    },
+    {
+      "name": "Transferslot",
+      "url": "https://transferslot.com/",
       "mode": "live_public"
     },
     {

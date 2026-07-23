@@ -47,10 +47,40 @@ PRIORITY_MARKETPLACES: tuple[Marketplace, ...] = (
         notes="The job skips live collection if the site blocks automated public fetches.",
     ),
     Marketplace(
+        name="BusinessBroker",
+        url="https://www.businessbroker.net/state/new-york-businesses-for-sale.aspx",
+        collection_mode="live_public",
+        notes="New York listing page exposes public listing links and asking prices.",
+    ),
+    Marketplace(
+        name="BusinessesForSale",
+        url="https://us.businessesforsale.com/us/search/businesses-for-sale-in-new-york",
+        collection_mode="live_public_jsonld",
+        notes="New York search page exposes public structured listing data.",
+    ),
+    Marketplace(
+        name="BusinessExits",
+        url="https://businessexits.com/listings/",
+        collection_mode="live_public",
+        notes="Public listing page exposes detail links, price, revenue, and income when disclosed.",
+    ),
+    Marketplace(
+        name="BusinessMart",
+        url="https://www.businessmart.com/businesses-for-sale.php",
+        collection_mode="live_public",
+        notes="Public table exposes listing links, asking price, cash flow, and location when disclosed.",
+    ),
+    Marketplace(
         name="FirstChoice Business Brokers",
         url="https://businessesforsaleinnewyorkcity.com",
         collection_mode="live_public_when_listings_visible",
         notes="New York-focused broker source; static page is checked for listing detail links.",
+    ),
+    Marketplace(
+        name="LINK",
+        url="https://linkbusiness.com/businesses-for-sale/",
+        collection_mode="live_public",
+        notes="Public listing cards expose detail links and some price, SDE, sales, location, and industry fields.",
     ),
     Marketplace(
         name="Merge",
@@ -63,6 +93,18 @@ PRIORITY_MARKETPLACES: tuple[Marketplace, ...] = (
         url="https://quietlight.com/listings/",
         collection_mode="live_public",
         notes="Curated online-business broker source with public listing cards.",
+    ),
+    Marketplace(
+        name="SMERGERS",
+        url="https://www.smergers.com/businesses-for-sale-and-investment-opportunities/t2b/",
+        collection_mode="live_public_partial_financials",
+        notes="Public listing cards expose detail links and revenue when available; asking price is often unavailable on cards.",
+    ),
+    Marketplace(
+        name="Transferslot",
+        url="https://transferslot.com/",
+        collection_mode="live_public",
+        notes="Public side-project cards expose detail links, asking price, MRR, and profit when disclosed.",
     ),
     Marketplace(
         name="Website Closers",

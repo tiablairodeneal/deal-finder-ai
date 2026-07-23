@@ -173,25 +173,34 @@ Current live research uses public pages, so there are no direct API costs. Keep 
 
 ## Priority Marketplaces
 
-The current workflow checks these priority sources:
+The current workflow checks these sources from the deal-flow spreadsheet when they expose public listing pages that are practical to fetch:
 
 - AcquisitionsDirect
 - AppBusinessBrokers
 - Axial
 - BizBuySell
 - BizQuest
+- BusinessBroker
+- BusinessesForSale
+- BusinessExits
+- BusinessMart
 - FirstChoice Business Brokers
+- LINK
 - Merge
 - QuietLight
+- SMERGERS
+- Transferslot
 - Website Closers
 
 The live job only reads public pages that are practical to fetch respectfully.
 
-- Live public listing cards: Merge, QuietLight, Website Closers
+- Live public listing cards or rows: BusinessBroker, BusinessExits, BusinessMart, LINK, Merge, QuietLight, SMERGERS, Transferslot, Website Closers
+- Live public structured listing data: BusinessesForSale
 - Live public detail links when visible: AcquisitionsDirect
 - Public page checked, no static listing details currently exposed: AppBusinessBrokers, FirstChoice Business Brokers
 - Skipped when blocked from this runtime: BizBuySell, BizQuest
-- Skipped because login-gated: Axial
+- Skipped because login-gated or not a public listing marketplace: Axial and spreadsheet sources such as private networks, Facebook groups, education products, legal/lender tools, and paid/proprietary data platforms
+- Skipped when robots.txt cannot be checked or does not safely allow fetching: DealStream, Motion Invest, Tiny Acquisitions, and any similar source until an approved export, API, or public fetch path is available
 
 Do not bypass logins, paywalls, CAPTCHAs, robots.txt, bot blocks, or other protections. Sample data remains available for local tests with `python run_demo.py --sample-only`.
 
