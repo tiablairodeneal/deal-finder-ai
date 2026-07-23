@@ -162,6 +162,25 @@ class ScoringTests(unittest.TestCase):
         self.assertIn("industry matches target list", result.matched_criteria)
         self.assertEqual(result.status, "Promising")
 
+    def test_every_latest_target_industry_can_pass_industry_filter(self):
+        criteria = load_criteria()
+        missing: list[str] = []
+        for industry in criteria["target_industries"]:
+            listing = Listing(
+                title=f"Approved {industry} Business",
+                source="UnitTest",
+                listing_url=f"https://example.com/{industry.lower().replace(' ', '-').replace('&', 'and')}",
+                industry=industry,
+                location="New York",
+                asking_price=2_000_000,
+                cash_flow=800_000,
+                seller_financing_offered=True,
+            )
+            result = score_listing(listing, criteria)
+            if "industry matches target list" not in result.matched_criteria or result.status != "Promising":
+                missing.append(industry)
+        self.assertEqual(missing, [])
+
 
 class PipelineTests(unittest.TestCase):
     def test_pipeline_removes_duplicate_sample_listing(self):

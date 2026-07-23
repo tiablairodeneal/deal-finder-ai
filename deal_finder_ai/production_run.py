@@ -24,6 +24,18 @@ class SourceSummary:
 
 
 @dataclass(frozen=True)
+class ListingSummary:
+    title: str
+    source: str
+    industry: str | None
+    subindustry: str | None
+    industry_score: str | None
+    buy_box_score: int
+    status: str
+    qualified: bool
+
+
+@dataclass(frozen=True)
 class RunSummary:
     marketplaces_checked: int
     listings_collected: int
@@ -34,6 +46,7 @@ class RunSummary:
     notion_updated: int
     dry_run: bool
     sources: list[SourceSummary]
+    listings: list[ListingSummary]
     errors: list[str]
 
 
@@ -113,6 +126,19 @@ def _summary(
             SourceSummary(source=result.source, collected=len(result.listings), mode=result.mode, note=result.note)
             for result in source_results
         ],
+        listings=[
+            ListingSummary(
+                title=item.listing.title,
+                source=item.listing.source,
+                industry=item.listing.industry,
+                subindustry=item.industry_assessment.subindustry if item.industry_assessment else None,
+                industry_score=item.industry_assessment.grade if item.industry_assessment else None,
+                buy_box_score=item.score.score,
+                status=item.score.status,
+                qualified=item in qualified,
+            )
+            for item in enriched
+        ],
         errors=errors,
     )
 
@@ -135,6 +161,17 @@ def _print_summary(summary: RunSummary) -> None:
     print("Sources:")
     for source in summary.sources:
         print(f"- {source.source}: {source.collected} listings ({source.mode}) - {source.note}")
+    print("Listings by classified sub-industry:")
+    if summary.listings:
+        for listing in summary.listings:
+            marker = "qualified" if listing.qualified else "not qualified"
+            print(
+                f"- {listing.source}: {listing.title} | industry: {listing.industry or 'Unavailable'} | "
+                f"sub-industry: {listing.subindustry or 'Unavailable'} | buy-box score: {listing.buy_box_score} | "
+                f"{listing.status} | {marker}"
+            )
+    else:
+        print("- none")
     if summary.errors:
         print("Errors or skipped sources:")
         for error in summary.errors:

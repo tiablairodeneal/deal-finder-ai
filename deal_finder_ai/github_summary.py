@@ -21,6 +21,18 @@ def markdown_from_summary(summary_path: str) -> str:
     ]
     for source in summary["sources"]:
         lines.append(f"- {source['source']}: {source['collected']} listings ({source['mode']})")
+    lines.extend(["", "### Listings By Classified Sub-Industry"])
+    if summary["listings"]:
+        for listing in summary["listings"]:
+            marker = "qualified" if listing["qualified"] else "not qualified"
+            lines.append(
+                f"- {listing['source']}: {listing['title']} | "
+                f"industry: {listing['industry'] or 'Unavailable'} | "
+                f"sub-industry: {listing['subindustry'] or 'Unavailable'} | "
+                f"buy-box score: {listing['buy_box_score']} | {listing['status']} | {marker}"
+            )
+    else:
+        lines.append("- none")
     if summary["errors"]:
         lines.extend(["", "### Errors or skipped sources"])
         lines.extend(f"- {error}" for error in summary["errors"])
