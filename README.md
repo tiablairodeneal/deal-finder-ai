@@ -4,6 +4,18 @@ This is a small first version of an AI-powered business acquisition deal finder.
 
 The important design choice: **Notion is the only database and CRM**. This project does not use Supabase or any other database. The code collects listings, scores them, removes duplicates, and sends qualified deals to Notion.
 
+## Project Documentation
+
+Future Codex agents and collaborators should read these first:
+
+- `AGENTS.md`: standing instructions for agents.
+- `docs/PROJECT_CONTEXT.md`: project purpose, architecture, production/provisional components, and operating constraints.
+- `docs/ACQUISITION_CRITERIA.md`: currently implemented buy box and approved industry/sub-industry taxonomy.
+- `docs/INDUSTRY_SCORING.md`: industry assessment methodology and Notion outputs.
+- `docs/AUTOMATION.md`: current Codex heartbeat production runner and manual testing.
+- `docs/decisions/`: concise architectural decision records.
+- `docs/worklog/`: monthly material project outcomes and limitations.
+
 ## What v1 Does
 
 - Uses your acquisition criteria from `acquisition_criteria.json`
@@ -180,7 +192,7 @@ The internal score is 0 to 100:
 
 The numeric score, component scores, source notes, confidence, dates, and cache metadata stay internal. Notion receives only:
 
-- `Sub-industry`: standardized title case, such as `Commercial Laundry` or `Digital Marketing Agencies`
+- `Sub-industry`: approved taxonomy label, such as `Commercial Laundry`, `Internet Related`, or `Other Business Services`
 - `Industry Score`: one letter only, `A`, `B`, `C`, or `D`
 - `Industry Assessment`: one sentence, capped at 35 words
 

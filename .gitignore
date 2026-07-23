@@ -1,4 +1,16 @@
 .deal_finder_cache/
 .deal_finder_run/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.token
+*.secret
+secrets/
+tmp/
+temp/
+.DS_Store
 __pycache__/
 *.py[cod]
+*.log
