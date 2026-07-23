@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from deal_finder_ai.collectors.marketplaces import active_marketplace_names, collect_priority_marketplace_samples
 from deal_finder_ai.collectors.live import (
+    _infer_industry,
     _is_link_business_detail,
     _jsonld_listing_items,
     _money_value,
@@ -58,6 +59,27 @@ class DuplicateTests(unittest.TestCase):
 
 
 class ScoringTests(unittest.TestCase):
+    def test_latest_target_subindustries_are_loaded(self):
+        criteria = load_criteria()
+        expected = {
+            "Commercial Laundry",
+            "Conferences & Trade Shows",
+            "Office Equipment Distribution",
+            "Security & Protection Services",
+            "Staffing",
+            "Day Care & Child Care Centers",
+            "Health Clubs, Gyms & Fitness Centers",
+            "Physical Therapy",
+            "Landscaping Services",
+            "Industrials & Manufacturing",
+            "B2B",
+            "E-Commerce & E-Tailers",
+            "Auto Parts Recycling",
+            "Parking",
+            "Taxi & Limousine",
+        }
+        self.assertTrue(expected.issubset(set(criteria["target_industries"])))
+
     def test_strong_new_york_seller_financed_listing_scores_promising(self):
         criteria = load_criteria()
         listing = Listing(
@@ -123,6 +145,21 @@ class ScoringTests(unittest.TestCase):
         self.assertEqual(result.status, "Excluded")
         self.assertIn("Amazon FBA", result.explanation)
 
+    def test_new_subindustry_scores_as_target_industry(self):
+        criteria = load_criteria()
+        listing = Listing(
+            title="Commercial Laundry Route",
+            source="BusinessBroker",
+            listing_url="https://example.com/commercial-laundry",
+            industry="Commercial Laundry",
+            location="New York",
+            asking_price=2_000_000,
+            cash_flow=800_000,
+        )
+        result = score_listing(listing, criteria)
+        self.assertIn("industry matches target list", result.matched_criteria)
+        self.assertEqual(result.status, "Promising")
+
 
 class PipelineTests(unittest.TestCase):
     def test_pipeline_removes_duplicate_sample_listing(self):
@@ -166,6 +203,12 @@ class PipelineTests(unittest.TestCase):
 
 
 class LiveCollectorTests(unittest.TestCase):
+    def test_live_inference_uses_latest_subindustry_names(self):
+        self.assertEqual(_infer_industry("Established commercial laundry linen route"), "Commercial Laundry")
+        self.assertEqual(_infer_industry("regional staffing and recruiting agency"), "Staffing")
+        self.assertEqual(_infer_industry("New York parking garage management company"), "Parking")
+        self.assertEqual(_infer_industry("physical therapy clinic with recurring patients"), "Physical Therapy")
+
     def test_robot_parser_allows_normal_path_when_query_urls_are_blocked(self):
         robots = """
         User-agent: *

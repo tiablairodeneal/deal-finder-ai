@@ -56,9 +56,9 @@ Views created:
 - By Industry
 - By Source
 
-## Your Starting Criteria
+## Your Acquisition Criteria
 
-- Industries: broad list including services, construction, healthcare, digital, transportation, media, consumer, and industrial categories
+- Industries and sub-industries: expanded list across business services, professional services, real estate services, construction/building services, consumer products and services, education and training, food and beverage, healthcare and wellness, home and garden, hospitality/entertainment/leisure, industrials/manufacturing, media/communications, technology/digital, and transportation/logistics
 - Location: New York State or fully online/remote
 - Asking price: $1M to $6M
 - Cash flow/SDE: $500k to $2M

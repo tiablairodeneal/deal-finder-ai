@@ -881,18 +881,96 @@ def _infer_location(text: str) -> str | None:
 
 def _infer_industry(text: str) -> str | None:
     lowered = text.lower()
+    if any(term in lowered for term in ["commercial laundry", "linen", "uniform rental"]):
+        return "Commercial Laundry"
+    if any(term in lowered for term in ["conference", "trade show", "expo ", "event production"]):
+        return "Conferences & Trade Shows"
+    if any(term in lowered for term in ["office equipment", "copier", "printer leasing"]):
+        return "Office Equipment Distribution"
+    if any(term in lowered for term in ["security guard", "security services", "alarm", "protection services"]):
+        return "Security & Protection Services"
+    if any(term in lowered for term in ["staffing", "recruiting", "employment agency", "talent agency"]):
+        return "Staffing"
+    if any(term in lowered for term in ["flooring", "floor covering"]):
+        return "Flooring"
+    if any(term in lowered for term in ["insulation", "coating", "spray foam"]):
+        return "Insulation & Coating"
+    if "locksmith" in lowered:
+        return "Locksmiths"
+    if any(term in lowered for term in ["painting business", "painting contractor", "paint contractor"]):
+        return "Painting Business"
+    if any(term in lowered for term in ["plumbing", "electrical contractor", "hvac", "roofing"]):
+        return "Specialty Trades"
+    if any(term in lowered for term in ["clothing", "fashion", "apparel", "footwear"]):
+        return "Clothing & Fashion"
+    if any(term in lowered for term in ["personal care", "beauty", "salon", "spa "]):
+        return "Personal Products & Services"
+    if any(term in lowered for term in ["day care", "daycare", "child care", "childcare"]):
+        return "Day Care & Child Care Centers"
+    if any(term in lowered for term in ["school", "academy", "tutoring", "test prep", "test preparation", "seminar"]):
+        return "Education & Training"
+    if any(term in lowered for term in ["farm", "agriculture", "agricultural"]):
+        return "Agricultural Production"
+    if any(term in lowered for term in ["distillery", "brewery", "winery", "alcohol production"]):
+        return "Distilleries & Alcohol Production"
+    if any(term in lowered for term in ["food manufacturing", "food production", "food packaging", "co-packing", "copacking"]):
+        return "Food Production & Packaging"
+    if any(term in lowered for term in ["vending", "micro market"]):
+        return "Vending Machines & Routes"
+    if any(term in lowered for term in ["behavioral health", "mental health", "aba therapy", "addiction"]):
+        return "Behavioral Health"
+    if any(term in lowered for term in ["health club", "gym", "fitness center", "fitness studio"]):
+        return "Health Clubs, Gyms & Fitness Centers"
+    if any(term in lowered for term in ["physical therapy", "physiotherapy", "pt clinic"]):
+        return "Physical Therapy"
     if any(term in lowered for term in ["wellness", "supplement", "skincare", "pet health"]):
         return "Wellness & Supplements"
-    if any(term in lowered for term in ["saas", "software", "app "]):
-        return "Technology & Digital"
+    if any(term in lowered for term in ["landscaping", "lawn care", "grounds maintenance"]):
+        return "Landscaping Services"
+    if any(term in lowered for term in ["home maintenance", "household maintenance", "home repair"]):
+        return "Household Maintenance"
+    if any(term in lowered for term in ["nursery", "garden center"]):
+        return "Nurseries & Garden Centers"
+    if any(term in lowered for term in ["art gallery", "museum"]):
+        return "Art Galleries & Museums"
+    if any(term in lowered for term in ["sports facility", "sports team", "recreation facility"]):
+        return "Sports Teams & Facilities"
+    if any(term in lowered for term in ["travel agency", "travel agent"]):
+        return "Travel Agents"
+    if any(term in lowered for term in ["industrial services", "industrial equipment", "equipment maintenance"]):
+        return "Industrial Services"
+    if any(term in lowered for term in ["manufacturing", "manufacturer", "machine shop"]):
+        return "Manufacturing"
+    if any(term in lowered for term in ["textile", "fabric", "materials manufacturing"]):
+        return "Textile & Materials Manufacturing"
+    if any(term in lowered for term in ["printing", "signage", "display graphics", "print shop"]):
+        return "Print, Signage & Display"
+    if any(term in lowered for term in ["radio station", "broadcast radio"]):
+        return "Radio Stations"
+    if any(term in lowered for term in ["media", "content", "pr ", "public relations", "newsletter", "publication"]):
+        return "Media & Content"
+    if any(term in lowered for term in ["b2b", "business-to-business"]):
+        return "B2B"
     if any(term in lowered for term in ["ecommerce", "e-commerce", "dtc", "amazon", "fba", "shopify"]):
         return "E-Commerce & Digital"
+    if any(term in lowered for term in ["saas", "software", "app ", "internet business", "online marketplace"]):
+        return "Technology & Digital"
+    if any(term in lowered for term in ["auto parts recycling", "salvage yard"]):
+        return "Auto Parts Recycling"
+    if any(term in lowered for term in ["parking lot", "parking garage", "parking management"]):
+        return "Parking"
+    if any(term in lowered for term in ["taxi", "limousine", "black car"]):
+        return "Taxi & Limousine"
+    if any(term in lowered for term in ["passenger transport", "shuttle", "transportation"]):
+        return "Passenger Transport"
     if any(term in lowered for term in ["digital marketing", "seo", "lead generation", "agency", "business services"]):
         return "Business Services"
-    if any(term in lowered for term in ["media", "content", "pr ", "public relations"]):
-        return "Media & Content"
     if any(term in lowered for term in ["construction", "contractor", "home services"]):
         return "Construction & Building Services"
+    if any(term in lowered for term in ["real estate", "property management"]):
+        return "Real Estate Services"
+    if any(term in lowered for term in ["restaurant", "food service", "cafe", "bakery"]):
+        return "Food & Beverage"
     return None
 
 
@@ -905,7 +983,7 @@ def _map_quietlight_category(category: str, title: str) -> str | None:
     if "content" in lowered:
         return "Media & Content"
     if "membership" in lowered:
-        return "Training & Education"
+        return "Education & Training"
     return _infer_industry(lowered)
 
 
