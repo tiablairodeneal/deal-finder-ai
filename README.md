@@ -36,8 +36,8 @@ Main fields:
 - Cash Flow / SDE / EBITDA
 - Financing
 - Seller Financing Offered
-- Score
-- Score Explanation
+- Industry Score
+- Buy Box Score
 - Status
 - Duplicate Key
 - Executive Summary
@@ -46,7 +46,7 @@ Main fields:
 - Sub-industry
 - Assessment
 
-`Score` is written to Notion as the industry-level letter grade: `A`, `B`, `C`, or `D`. The original listing/deal score is still calculated internally and remains visible in `Score Explanation` and the executive summary.
+`Industry Score` is written to Notion as the industry-level letter grade: `A`, `B`, `C`, or `D`. The original listing/deal score is still calculated internally and remains visible in `Buy Box Score` and the executive summary.
 
 Views created:
 
@@ -135,7 +135,7 @@ The internal score is 0 to 100:
 The numeric score, component scores, source notes, confidence, dates, and cache metadata stay internal. Notion receives only:
 
 - `Sub-industry`: standardized title case, such as `Commercial Laundry` or `Digital Marketing Agencies`
-- `Score`: one letter only, `A`, `B`, `C`, or `D`
+- `Industry Score`: one letter only, `A`, `B`, `C`, or `D`
 - `Assessment`: one sentence, capped at 35 words
 
 The assessor does not use listing-specific revenue, SDE, asking price, valuation multiple, margins, or customer concentration when assigning the industry grade. Those stay part of separate company-level diligence.
