@@ -106,6 +106,67 @@ python run_demo.py --sync-notion
 
 The sync checks existing Notion duplicate keys before creating new records.
 
+## Hosted Daily Automation
+
+The production daily run is hosted in GitHub Actions at `.github/workflows/daily-deal-finder.yml`.
+
+It runs the same repository workflow as the local command:
+
+1. Run the automated tests.
+2. Collect live public listings from the configured sources.
+3. Apply exclusions, scoring, industry assessment, and duplicate detection.
+4. Create or update qualified records in the same Notion deals database.
+
+The workflow is scheduled for **9:00 a.m. America/New_York every day**. GitHub Actions schedules are written in UTC, so the workflow registers both UTC times that can map to 9:00 a.m. New York:
+
+- `13:00 UTC` during Eastern Daylight Time
+- `14:00 UTC` during Eastern Standard Time
+
+A local-time guard inside the job checks `America/New_York` and skips the non-matching trigger. This keeps the run at 9:00 a.m. New York time when daylight saving time changes.
+
+### Required GitHub Repository Secrets
+
+Configure these in GitHub:
+
+`Settings` -> `Secrets and variables` -> `Actions` -> `Repository secrets`
+
+- `NOTION_TOKEN`
+- `NOTION_DEALS_DATABASE_ID`
+
+The current live research provider and public scrapers do not require paid API credentials. If a future research provider or scraper requires credentials, add them as repository secrets and pass them to the workflow as environment variables. Do not commit credential values.
+
+### Manual Run
+
+In GitHub, open:
+
+`Actions` -> `Daily Deal Finder` -> `Run workflow`
+
+Inputs:
+
+- `dry_run=true`: safe test mode that collects, scores, deduplicates, and summarizes without writing to Notion.
+- `dry_run=false`: production mode that creates or updates qualified deals in Notion.
+- `max_per_source`: reduce this for a smaller test run.
+
+The workflow uses GitHub Actions concurrency so only one production run can execute at a time. This prevents overlapping scheduled/manual runs from creating duplicate rows.
+
+### Monitoring Failures
+
+Each run writes a concise GitHub Actions summary with:
+
+- Listings collected
+- Listings retained after exclusions and deduplication
+- Listings qualified
+- Notion records created
+- Notion records updated
+- Listings skipped
+- Errors or failed sources
+
+If a run fails, GitHub uploads non-secret run artifacts from `.deal_finder_run/` and `.deal_finder_cache/` for troubleshooting. Secret values are not printed by the workflow.
+
+### Cache Persistence
+
+Industry research records are restored and saved with `actions/cache` from `.deal_finder_cache`. The cache key includes the operating system and `acquisition_criteria.json`, so normal runs reuse useful research while criteria changes can start a fresh cache.
+
 ## Scoring System
 
 The listing/deal score is intentionally transparent:

@@ -1,0 +1,124 @@
+name: Daily Deal Finder
+
+on:
+  schedule:
+    # 9:00 a.m. America/New_York is 13:00 UTC during daylight saving time
+    # and 14:00 UTC during standard time. The local-time guard below skips
+    # the non-matching cron trigger.
+    - cron: "0 13 * * *"
+    - cron: "0 14 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Collect and score listings without writing to Notion"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+      max_per_source:
+        description: "Maximum public listings to collect per source"
+        required: true
+        default: "10"
+        type: string
+
+concurrency:
+  group: daily-deal-finder-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh-notion:
+    name: Refresh Notion deals
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check New York run time
+        id: local_time
+        shell: bash
+        run: |
+          local_hour="$(TZ=America/New_York date +%H)"
+          local_stamp="$(TZ=America/New_York date '+%Y-%m-%d %H:%M:%S %Z')"
+          should_run="true"
+          if [[ "${{ github.event_name }}" == "schedule" && "$local_hour" != "09" ]]; then
+            should_run="false"
+          fi
+          {
+            echo "should_run=$should_run"
+            echo "local_stamp=$local_stamp"
+          } >> "$GITHUB_OUTPUT"
+          echo "New York local time: $local_stamp"
+
+      - name: Stop non-9am duplicate schedule trigger
+        if: steps.local_time.outputs.should_run != 'true'
+        run: echo "Skipping because this UTC trigger is not 9:00 a.m. America/New_York."
+
+      - name: Check out repository
+        if: steps.local_time.outputs.should_run == 'true'
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        if: steps.local_time.outputs.should_run == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Restore industry research cache
+        if: steps.local_time.outputs.should_run == 'true'
+        uses: actions/cache@v4
+        with:
+          path: .deal_finder_cache
+          key: deal-finder-industry-cache-${{ runner.os }}-${{ hashFiles('acquisition_criteria.json') }}
+          restore-keys: |
+            deal-finder-industry-cache-${{ runner.os }}-
+
+      - name: Run automated tests
+        if: steps.local_time.outputs.should_run == 'true'
+        run: python -m unittest discover -s tests -v
+
+      - name: Refresh Notion deals
+        if: steps.local_time.outputs.should_run == 'true'
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DEALS_DATABASE_ID: ${{ secrets.NOTION_DEALS_DATABASE_ID }}
+          DEAL_FINDER_RESEARCH_PROVIDER: live
+          DEAL_FINDER_LIVE_RESEARCH_ENABLED: "1"
+          DEAL_FINDER_RESEARCH_TIMEOUT_SECONDS: "12"
+          DEAL_FINDER_RESEARCH_RETRIES: "1"
+          DEAL_FINDER_SCRAPER_TIMEOUT_SECONDS: "20"
+          DEAL_FINDER_SCRAPER_RETRIES: "1"
+          DEAL_FINDER_NOTION_TIMEOUT_SECONDS: "30"
+          DEAL_FINDER_NOTION_RETRIES: "2"
+          DEAL_FINDER_INDUSTRY_CACHE_PATH: .deal_finder_cache/industry_research_cache.json
+        run: |
+          dry_run="${{ github.event.inputs.dry_run || 'false' }}"
+          max_per_source="${{ github.event.inputs.max_per_source || '10' }}"
+          args=(--max-per-source "$max_per_source" --summary-path .deal_finder_run/run_summary.json)
+          if [[ "$dry_run" == "true" ]]; then
+            args+=(--dry-run)
+          fi
+          python -m deal_finder_ai.production_run "${args[@]}"
+
+      - name: Add run summary
+        if: always() && steps.local_time.outputs.should_run == 'true'
+        run: |
+          if [[ -f .deal_finder_run/run_summary.json ]]; then
+            python -m deal_finder_ai.github_summary
+          else
+            echo "No run summary artifact was produced." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload failure artifacts
+        if: failure() && steps.local_time.outputs.should_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: deal-finder-failure-artifacts
+          path: |
+            .deal_finder_run/
+            .deal_finder_cache/
+          if-no-files-found: ignore
+          retention-days: 14

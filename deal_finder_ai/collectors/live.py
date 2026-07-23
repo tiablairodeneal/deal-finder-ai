@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import json
+import os
 import re
 import time
 from dataclasses import dataclass
@@ -552,24 +553,35 @@ def _fetch_public_page(url: str, delay_seconds: int = 0) -> Page:
         raise LiveCollectionError(f"robots.txt does not allow fetching {url}")
     if delay_seconds:
         time.sleep(delay_seconds)
-    request = Request(url, headers={"User-Agent": USER_AGENT})
-    try:
-        with urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS) as response:
-            content_type = response.headers.get("content-type", "")
-            if "html" not in content_type and "xml" not in content_type and "text" not in content_type:
-                raise LiveCollectionError(f"unsupported content type for {url}: {content_type}")
-            return Page(url=url, html=response.read().decode("utf-8", "ignore"))
-    except HTTPError as error:
-        raise LiveCollectionError(f"{url} returned HTTP {error.code}") from error
-    except URLError as error:
-        raise LiveCollectionError(f"{url} could not be fetched: {error.reason}") from error
+    timeout = int(os.getenv("DEAL_FINDER_SCRAPER_TIMEOUT_SECONDS", str(REQUEST_TIMEOUT_SECONDS)))
+    retries = int(os.getenv("DEAL_FINDER_SCRAPER_RETRIES", "1"))
+    last_error: str | None = None
+    for attempt in range(retries + 1):
+        request = Request(url, headers={"User-Agent": USER_AGENT})
+        try:
+            with urlopen(request, timeout=timeout) as response:
+                content_type = response.headers.get("content-type", "")
+                if "html" not in content_type and "xml" not in content_type and "text" not in content_type:
+                    raise LiveCollectionError(f"unsupported content type for {url}: {content_type}")
+                return Page(url=url, html=response.read().decode("utf-8", "ignore"))
+        except HTTPError as error:
+            last_error = f"{url} returned HTTP {error.code}"
+            if error.code not in {429, 500, 502, 503, 504}:
+                raise LiveCollectionError(last_error) from error
+        except (URLError, TimeoutError) as error:
+            reason = getattr(error, "reason", error)
+            last_error = f"{url} could not be fetched: {reason}"
+        if attempt < retries:
+            time.sleep(min(2**attempt, 8))
+    raise LiveCollectionError(last_error or f"{url} could not be fetched")
 
 
 def _robots_allows(url: str) -> bool:
     parsed = urlparse(url)
     robots_url = f"{parsed.scheme}://{parsed.netloc}/robots.txt"
+    timeout = int(os.getenv("DEAL_FINDER_SCRAPER_TIMEOUT_SECONDS", str(REQUEST_TIMEOUT_SECONDS)))
     try:
-        with urlopen(Request(robots_url, headers={"User-Agent": USER_AGENT}), timeout=REQUEST_TIMEOUT_SECONDS) as response:
+        with urlopen(Request(robots_url, headers={"User-Agent": USER_AGENT}), timeout=timeout) as response:
             robots_text = response.read().decode("utf-8", "ignore")
     except Exception:
         raise LiveCollectionError(f"robots.txt could not be checked for {url}")

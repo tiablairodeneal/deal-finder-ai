@@ -33,8 +33,10 @@ from deal_finder_ai.industry_assessment import (
     score_industry,
 )
 from deal_finder_ai.models import EnrichedListing, IndustryAssessment, Listing, ScoreResult
-from deal_finder_ai.notion_sync import _page_properties
+from deal_finder_ai.notion_sync import _page_properties, sync_to_notion_with_counts
 from deal_finder_ai.pipeline import enrich_listings, qualified_listings
+from deal_finder_ai.production_run import _validate_required_environment
+from deal_finder_ai.scheduling import is_nine_am_new_york
 from deal_finder_ai.scoring import score_listing
 
 
@@ -336,6 +338,69 @@ class NotionSyncTests(unittest.TestCase):
         )
         self.assertIn(properties["Industry Score"]["select"]["name"], {"A", "B", "C", "D"})
         self.assertLessEqual(len(properties["Industry Assessment"]["rich_text"][0]["text"]["content"].split()), 35)
+
+    def test_sync_counts_created_and_updated_pages(self):
+        item = EnrichedListing(
+            listing=Listing(
+                title="Existing Deal",
+                source="BizQuest",
+                listing_url="https://example.com/existing",
+                industry="Business Services",
+                location="New York",
+            ),
+            duplicate_key="https://example.com/existing",
+            score=ScoreResult(80, "80/100 total", [], [], "Promising"),
+            executive_summary="Summary.",
+        )
+
+        def fake_request(_token, url, payload, method="POST"):
+            if url.endswith("/query"):
+                return {
+                    "results": [
+                        {
+                            "id": "existing-page-id",
+                            "properties": {
+                                "Duplicate Key": {
+                                    "rich_text": [{"plain_text": "https://example.com/existing"}],
+                                }
+                            },
+                        }
+                    ],
+                    "has_more": False,
+                }
+            self.assertEqual(method, "PATCH")
+            self.assertIn("existing-page-id", url)
+            return {"id": "existing-page-id"}
+
+        with patch.dict("os.environ", {"NOTION_TOKEN": "not-a-real-token", "NOTION_DEALS_DATABASE_ID": "database-id"}):
+            with patch("deal_finder_ai.notion_sync._notion_request", side_effect=fake_request):
+                result = sync_to_notion_with_counts([item])
+
+        self.assertEqual(result.created_pages, 0)
+        self.assertEqual(result.updated_pages, 1)
+
+
+class ProductionRunTests(unittest.TestCase):
+    def test_production_run_requires_notion_configuration_when_not_dry_run(self):
+        with patch.dict("os.environ", {}, clear=True):
+            with self.assertRaises(SystemExit) as context:
+                _validate_required_environment(dry_run=False)
+        self.assertIn("NOTION_TOKEN", str(context.exception))
+        self.assertIn("NOTION_DEALS_DATABASE_ID", str(context.exception))
+
+    def test_production_dry_run_does_not_require_notion_configuration(self):
+        with patch.dict("os.environ", {}, clear=True):
+            _validate_required_environment(dry_run=True)
+
+
+class SchedulingTests(unittest.TestCase):
+    def test_nine_am_new_york_during_standard_time(self):
+        self.assertTrue(is_nine_am_new_york(datetime(2026, 1, 15, 14, 0, tzinfo=UTC)))
+        self.assertFalse(is_nine_am_new_york(datetime(2026, 1, 15, 13, 0, tzinfo=UTC)))
+
+    def test_nine_am_new_york_during_daylight_saving_time(self):
+        self.assertTrue(is_nine_am_new_york(datetime(2026, 7, 15, 13, 0, tzinfo=UTC)))
+        self.assertFalse(is_nine_am_new_york(datetime(2026, 7, 15, 14, 0, tzinfo=UTC)))
 
 
 class IndustryAssessmentTests(unittest.TestCase):
