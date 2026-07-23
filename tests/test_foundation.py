@@ -238,6 +238,7 @@ class NotionSyncTests(unittest.TestCase):
         self.assertEqual(properties["Asking Price"], {"number": None})
         self.assertEqual(properties["Annual Revenue"], {"number": None})
         self.assertEqual(properties["Cash Flow / SDE / EBITDA"], {"number": None})
+        self.assertNotIn("Executive Summary", properties)
 
     def test_industry_assessment_populates_exact_three_notion_fields(self):
         item = EnrichedListing(

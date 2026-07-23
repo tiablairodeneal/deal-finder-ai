@@ -38,7 +38,6 @@ Main fields:
 - Industry Score
 - Buy Box Score
 - Status
-- Executive Summary
 - Date Found
 - Last Seen
 - Sub-industry
@@ -46,7 +45,7 @@ Main fields:
 
 `Duplicate Key` is kept as a hidden operations field so the Notion sync can update existing rows instead of creating duplicates.
 
-`Industry Score` is written to Notion as the industry-level letter grade: `A`, `B`, `C`, or `D`. The original listing/deal score is still calculated internally and remains visible in `Buy Box Score` and the executive summary.
+`Industry Score` is written to Notion as the industry-level letter grade: `A`, `B`, `C`, or `D`. The original listing/deal score is still calculated internally and remains visible in `Buy Box Score`.
 
 Views created:
 

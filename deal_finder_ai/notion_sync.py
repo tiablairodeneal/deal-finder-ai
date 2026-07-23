@@ -79,7 +79,6 @@ def _page_properties(item: EnrichedListing, include_date_found: bool) -> dict[st
         "Buy Box Score": {"rich_text": [{"text": {"content": item.score.explanation[:1900]}}]},
         "Status": {"status": {"name": "Not started"}},
         "Duplicate Key": {"rich_text": [{"text": {"content": item.duplicate_key}}]},
-        "Executive Summary": {"rich_text": [{"text": {"content": item.executive_summary[:1900]}}]},
         "Last Seen": {"date": {"start": today}},
     }
     if include_date_found:
