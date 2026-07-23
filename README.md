@@ -34,17 +34,17 @@ Main fields:
 - Asking Price
 - Annual Revenue
 - Cash Flow / SDE / EBITDA
-- Financing
 - Seller Financing Offered
 - Industry Score
 - Buy Box Score
 - Status
-- Duplicate Key
 - Executive Summary
 - Date Found
 - Last Seen
 - Sub-industry
-- Assessment
+- Industry Assessment
+
+`Duplicate Key` is kept as a hidden operations field so the Notion sync can update existing rows instead of creating duplicates.
 
 `Industry Score` is written to Notion as the industry-level letter grade: `A`, `B`, `C`, or `D`. The original listing/deal score is still calculated internally and remains visible in `Buy Box Score` and the executive summary.
 
@@ -136,7 +136,7 @@ The numeric score, component scores, source notes, confidence, dates, and cache 
 
 - `Sub-industry`: standardized title case, such as `Commercial Laundry` or `Digital Marketing Agencies`
 - `Industry Score`: one letter only, `A`, `B`, `C`, or `D`
-- `Assessment`: one sentence, capped at 35 words
+- `Industry Assessment`: one sentence, capped at 35 words
 
 The assessor does not use listing-specific revenue, SDE, asking price, valuation multiple, margins, or customer concentration when assigning the industry grade. Those stay part of separate company-level diligence.
 

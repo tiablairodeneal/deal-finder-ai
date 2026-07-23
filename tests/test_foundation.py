@@ -230,7 +230,7 @@ class NotionSyncTests(unittest.TestCase):
         self.assertEqual(properties["Sub-industry"], {"rich_text": [{"text": {"content": "Commercial Laundry"}}]})
         self.assertEqual(properties["Industry Score"], {"select": {"name": "B"}})
         self.assertEqual(
-            properties["Assessment"],
+            properties["Industry Assessment"],
             {
                 "rich_text": [
                     {
@@ -250,14 +250,15 @@ class NotionSyncTests(unittest.TestCase):
             "Sources",
             "Research Date",
             "Regulatory Geography",
+            "Financing",
         }
         self.assertTrue(forbidden.isdisjoint(properties))
         self.assertEqual(
-            set(["Sub-industry", "Industry Score", "Assessment"]) & set(properties),
-            {"Sub-industry", "Industry Score", "Assessment"},
+            set(["Sub-industry", "Industry Score", "Industry Assessment"]) & set(properties),
+            {"Sub-industry", "Industry Score", "Industry Assessment"},
         )
         self.assertIn(properties["Industry Score"]["select"]["name"], {"A", "B", "C", "D"})
-        self.assertLessEqual(len(properties["Assessment"]["rich_text"][0]["text"]["content"].split()), 35)
+        self.assertLessEqual(len(properties["Industry Assessment"]["rich_text"][0]["text"]["content"].split()), 35)
 
 
 class IndustryAssessmentTests(unittest.TestCase):

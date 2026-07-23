@@ -75,7 +75,6 @@ def _page_properties(item: EnrichedListing, include_date_found: bool) -> dict[st
         "Deal Name": {"title": [{"text": {"content": listing.title}}]},
         "Source": {"select": {"name": listing.source}},
         "Location": {"rich_text": [{"text": {"content": listing.location or "Unavailable"}}]},
-        "Financing": {"rich_text": [{"text": {"content": listing.financing or "Unavailable"}}]},
         "Seller Financing Offered": {"checkbox": listing.seller_financing_offered},
         "Buy Box Score": {"rich_text": [{"text": {"content": item.score.explanation[:1900]}}]},
         "Status": {"status": {"name": "Not started"}},
@@ -100,7 +99,7 @@ def _page_properties(item: EnrichedListing, include_date_found: bool) -> dict[st
             {
                 "Sub-industry": {"rich_text": [{"text": {"content": item.industry_assessment.subindustry}}]},
                 "Industry Score": {"select": {"name": item.industry_assessment.grade}},
-                "Assessment": {"rich_text": [{"text": {"content": item.industry_assessment.assessment}}]},
+                "Industry Assessment": {"rich_text": [{"text": {"content": item.industry_assessment.assessment}}]},
             }
         )
     return properties
