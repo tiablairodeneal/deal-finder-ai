@@ -30,9 +30,18 @@ class ScoreResult:
 
 
 @dataclass(frozen=True)
+class IndustryAssessment:
+    subindustry: str
+    grade: str
+    assessment: str
+    cache_key: str
+    internal_score: int
+
+
+@dataclass(frozen=True)
 class EnrichedListing:
     listing: Listing
     duplicate_key: str
     score: ScoreResult
     executive_summary: str
-
+    industry_assessment: IndustryAssessment | None = None

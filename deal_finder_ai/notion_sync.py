@@ -77,7 +77,6 @@ def _page_properties(item: EnrichedListing, include_date_found: bool) -> dict[st
         "Location": {"rich_text": [{"text": {"content": listing.location or "Unavailable"}}]},
         "Financing": {"rich_text": [{"text": {"content": listing.financing or "Unavailable"}}]},
         "Seller Financing Offered": {"checkbox": listing.seller_financing_offered},
-        "Score": {"number": item.score.score},
         "Score Explanation": {"rich_text": [{"text": {"content": item.score.explanation[:1900]}}]},
         "Status": {"status": {"name": "Not started"}},
         "Duplicate Key": {"rich_text": [{"text": {"content": item.duplicate_key}}]},
@@ -96,6 +95,14 @@ def _page_properties(item: EnrichedListing, include_date_found: bool) -> dict[st
         properties["Annual Revenue"] = {"number": listing.annual_revenue}
     if listing.cash_flow is not None or not include_date_found:
         properties["Cash Flow / SDE / EBITDA"] = {"number": listing.cash_flow}
+    if item.industry_assessment:
+        properties.update(
+            {
+                "Sub-industry": {"rich_text": [{"text": {"content": item.industry_assessment.subindustry}}]},
+                "Score": {"select": {"name": item.industry_assessment.grade}},
+                "Assessment": {"rich_text": [{"text": {"content": item.industry_assessment.assessment}}]},
+            }
+        )
     return properties
 
 

@@ -11,6 +11,8 @@ The important design choice: **Notion is the only database and CRM**. This proje
 - Uses live public listing pages where practical, with sample data kept for tests and demos
 - Scores every listing from 0 to 100
 - Explains each score in plain English
+- Classifies each listing into a standardized sub-industry
+- Adds an internal ETA industry assessment with Porter’s Five Forces
 - Removes duplicates using the listing URL first
 - Marks missing financial data as unavailable instead of guessing
 - Generates a short executive summary
@@ -41,6 +43,10 @@ Main fields:
 - Executive Summary
 - Date Found
 - Last Seen
+- Sub-industry
+- Assessment
+
+`Score` is written to Notion as the industry-level letter grade: `A`, `B`, `C`, or `D`. The original listing/deal score is still calculated internally and remains visible in `Score Explanation` and the executive summary.
 
 Views created:
 
@@ -103,7 +109,7 @@ The sync checks existing Notion duplicate keys before creating new records.
 
 ## Scoring System
 
-The score is intentionally transparent:
+The listing/deal score is intentionally transparent:
 
 - Industry match: 20 points
 - Location match: 15 points
@@ -115,6 +121,55 @@ The score is intentionally transparent:
 Missing financial information gets 0 points for that category and is labeled unavailable.
 
 A listing is only marked Promising when it reaches the score threshold and passes the core fit checks: industry, location, asking price, and cash flow/SDE/EBITDA.
+
+## Industry Assessment
+
+Each enriched listing also receives an industry-level assessment using `eta-industry-v1`.
+
+The internal score is 0 to 100:
+
+- Industry Outlook: 40 points
+- Porter’s Five Forces: 30 points
+- ETA Operating and Acquisition Quality: 30 points
+
+The numeric score, component scores, source notes, confidence, dates, and cache metadata stay internal. Notion receives only:
+
+- `Sub-industry`: standardized title case, such as `Commercial Laundry` or `Digital Marketing Agencies`
+- `Score`: one letter only, `A`, `B`, `C`, or `D`
+- `Assessment`: one sentence, capped at 35 words
+
+The assessor does not use listing-specific revenue, SDE, asking price, valuation multiple, margins, or customer concentration when assigning the industry grade. Those stay part of separate company-level diligence.
+
+Research records are cached in `.deal_finder_cache/industry_research_cache.json` by sub-industry, regulatory geography, and methodology version. The cache is ignored by git. Stale records, methodology mismatches, and materially different regulatory geographies trigger a fresh assessment.
+
+### Research Provider Configuration
+
+Production defaults to the live research provider. It only runs when live public research is explicitly enabled:
+
+```bash
+export DEAL_FINDER_RESEARCH_PROVIDER="live"
+export DEAL_FINDER_LIVE_RESEARCH_ENABLED="1"
+```
+
+The live provider uses public authoritative sources such as BLS, Census, BEA, Federal Register, and relevant state regulator pages. It does not use broker listings or marketplaces as primary evidence and does not claim access to paid reports such as IBISWorld.
+
+Optional controls:
+
+```bash
+export DEAL_FINDER_RESEARCH_TIMEOUT_SECONDS="12"
+export DEAL_FINDER_RESEARCH_RETRIES="1"
+export DEAL_FINDER_INDUSTRY_CACHE_PATH=".deal_finder_cache/industry_research_cache.json"
+```
+
+For deterministic local development only:
+
+```bash
+export DEAL_FINDER_RESEARCH_PROVIDER="static"
+```
+
+Static output is marked internally as `static_template`, not current verified research. If live research is selected but not enabled or unavailable, the batch continues with a conservative provisional assessment no better than `C`; the issue is logged and the invalid/provisional result is not cached as verified research.
+
+Current live research uses public pages, so there are no direct API costs. Keep requests modest: cache results, use the default timeout/retry settings, and avoid reprocessing stale-free cache keys unnecessarily.
 
 ## Priority Marketplaces
 
